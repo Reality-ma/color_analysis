@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from skimage import color, filters, measure, morphology
 
 def color_clustering(image, n_colors=3):
-    """颜色聚类"""
+    """对图像进行颜色聚类"""
     if image.shape[2] == 4:  # RGBA 转 RGB
         image = image[:, :, :3]
     img_lab = color.rgb2lab(image)  # 转 LAB 空间
