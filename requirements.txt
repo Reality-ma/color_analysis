@@ -1,0 +1,9 @@
+streamlit==1.25.0
+numpy
+Pillow
+scikit-image
+scikit-learn
+matplotlib
+opencv-python
+pandas
+scipy
