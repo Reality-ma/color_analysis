@@ -156,36 +156,4 @@ if img is not None:
     st.subheader("单颜色区域识别结果")
     cols = st.columns(len(color_labels))
     single_color_results = []
-    for i,(label, idx) in enumerate(color_labels.items()):
-        mask = clustered_img==idx
-        overlay_img, edges, anomalies = process_color_region(img_np, mask)
-        single_color_results.append(overlay_img)
-        with cols[i%len(cols)]:
-            st.image(overlay_img, caption=label, use_container_width=True)
-
-    # --- 综合颜色叠加图 ---
-    combined_overlay = img_np.copy()
-    for overlay_img in single_color_results:
-        mask_nonzero = np.any(overlay_img != 0, axis=2)
-        combined_overlay[mask_nonzero] = overlay_img[mask_nonzero]
-
-    # 次要颜色边界高亮
-    combined_overlay = highlight_minor_regions(combined_overlay, clustered_img, color_labels, proportions,
-                                               minor_threshold=minor_threshold, contour_color=contour_color,
-                                               contour_thickness=contour_thickness)
-
-    st.subheader("综合颜色叠加轮廓图")
-    st.image(combined_overlay, use_container_width=True)
-
-    # --- 颜色比例统计 + 饼图 + CSV ---
-    df_props = pd.DataFrame([(label, proportions[label] if label in proportions else 0) for label in color_labels.keys()],
-                            columns=["颜色","比例 (%)"])
-    st.subheader("颜色比例统计")
-    st.table(df_props)
-    fig, ax = plt.subplots()
-    ax.pie(df_props["比例 (%)"], labels=df_props["颜色"], autopct="%.2f%%", startangle=90)
-    ax.axis("equal")
-    st.pyplot(fig)
-    color_csv_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
-    df_props.to_csv(color_csv_file.name,index=False)
-    st.download_button("下载颜色比例 CSV", color_csv_file.name, file_name="color_proportions_named.csv")
+    for i,(label, idx) in enumerate(color_la_
