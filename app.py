@@ -1,55 +1,32 @@
 import streamlit as st
+import cv2
 import numpy as np
 from PIL import Image
-from skimage import color, feature, filters, morphology, exposure
-from sklearn.cluster import KMeans
-import cv2
+from utils import color_clustering, extract_layer_edges, extract_impurity_contours
+import matplotlib.pyplot as plt
 
-st.title("颜色聚类 + 层界面和杂质识别")
+st.title("层状物颜色与层界面识别系统")
 
-# --- 图像输入 ---
-uploaded_file = st.file_uploader("上传图片", type=["jpg","png","jpeg","tif","tiff"])
-if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert("RGB")
-    img_np = np.array(img)
-    
-    # --- 用户设置 ---
-    n_clusters = st.slider("选择颜色类别数量", 3, 6, 4)
-    
-    # --- 颜色聚类 ---
-    h,w,c = img_np.shape
-    reshaped = img_np.reshape((-1,3))
-    kmeans = KMeans(n_clusters=n_clusters, n_init=10, random_state=42)
-    labels = kmeans.fit_predict(reshaped)
-    clustered_img = labels.reshape((h,w))
-    
-    st.subheader("颜色聚类结果")
-    for i in range(n_clusters):
-        mask = clustered_img==i
-        cluster_rgb = np.zeros_like(img_np)
-        cluster_rgb[mask] = img_np[mask]
-        st.image(cluster_rgb, caption=f"颜色类别 {i+1}", use_container_width=True)
-    
-    # --- 对每个颜色区域进行层界面和杂质识别 ---
-    st.subheader("层界面和杂质识别结果")
-    for i in range(n_clusters):
-        mask = clustered_img==i
-        masked_img = img_np.copy()
-        masked_img[~mask] = 0
-        gray = color.rgb2gray(masked_img)
-        
-        # 层界面识别
-        edges = feature.canny(gray, sigma=1.0)
-        edges_dilated = morphology.dilation(edges, morphology.rectangle(1,25))
-        
-        # 杂质识别
-        thresh_val = filters.threshold_local(gray, block_size=35)
-        anomalies = gray < thresh_val
-        anomalies = morphology.opening(anomalies, morphology.square(3))
-        
-        # 叠加轮廓
-        overlay = masked_img.copy()
-        overlay[edges_dilated] = [255,0,0]       # 界面红色
-        overlay[anomalies] = [0,255,0]           # 杂质绿色
-        
-        st.image(overlay, caption=f"颜色类别 {i+1} 层界面+杂质", use_container_width=True)
+uploaded_file = st.file_uploader("上传层状物图片", type=["jpg", "png", "jpeg"])
+
+if uploaded_file:
+    img = Image.open(uploaded_file)
+    img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+    st.image(img, caption='原图', use_column_width=True)
+
+    n_colors = st.slider("选择颜色类别数量", min_value=2, max_value=10, value=3)
+    labels, clustered_img = color_clustering(img_cv, n_colors=n_colors)
+
+    st.image(cv2.cvtColor(clustered_img, cv2.COLOR_BGR2RGB), caption='颜色聚类结果', use_column_width=True)
+
+    layer_edges = extract_layer_edges(labels)
+    st.image(layer_edges, caption='层界面边缘', use_column_width=True)
+
+    impurity_contours = extract_impurity_contours(labels, img_cv)
+    st.image(cv2.cvtColor(impurity_contours, cv2.COLOR_BGR2RGB), caption='杂质轮廓', use_column_width=True)
+
+    # 输出每个颜色类别独立图
+    st.write("每个颜色类别独立展示")
+    for i in np.unique(labels):
+        mask = (labels == i).astype(np.uint8)*255
+        st.image(mask, caption=f'颜色类别 {i}', use_column_width=True)
