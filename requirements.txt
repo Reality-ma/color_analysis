@@ -1,9 +1,7 @@
-streamlit==1.25.0
-numpy>=1.24.0
-Pillow>=9.5.0
-scikit-image>=0.20.0
-scikit-learn>=1.2.2
-matplotlib>=3.7.0
-opencv-python-headless>=4.8.1
-pandas>=2.0.3
-scipy>=1.10.1
+streamlit
+numpy
+Pillow
+pandas
+scikit-image
+scikit-learn
+matplotlib
