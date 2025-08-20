@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from skimage import color, filters, measure, morphology
 
 def color_clustering(image, n_colors=3):
-    """对图像进行颜色聚类"""
+    """颜色聚类"""
     if image.shape[2] == 4:  # RGBA 转 RGB
         image = image[:, :, :3]
     img_lab = color.rgb2lab(image)  # 转 LAB 空间
@@ -20,7 +20,7 @@ def extract_layer_edges(label_img):
     edges = np.zeros_like(label_img, dtype=np.uint8)
     for i in np.unique(label_img):
         mask = (label_img == i).astype(np.float32)
-        edge = filters.sobel(mask)  # Sobel 边缘检测
+        edge = filters.sobel(mask)
         edge_bin = (edge > 0.01).astype(np.uint8)*255
         edges = np.maximum(edges, edge_bin)
     return edges
