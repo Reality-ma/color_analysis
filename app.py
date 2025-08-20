@@ -1,32 +1,26 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
-
-# utils.py 函数保持不变
 from utils import color_clustering, extract_layer_edges, extract_impurity_contours
 
-st.title("层状物颜色与层界面识别系统")
+st.title("层状物颜色与层界面识别系统（无需 OpenCV）")
 
 uploaded_file = st.file_uploader("上传层状物图片", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
-    img = Image.open(uploaded_file)
-    img_cv = np.array(img)  # PIL 转为 numpy
-    if img_cv.shape[2] == 4:  # RGBA 转 BGR
-        img_cv = img_cv[:, :, :3]
-    
+    img = Image.open(uploaded_file).convert("RGB")
+    img_np = np.array(img)
     st.image(img, caption='原图', use_column_width=True)
 
     n_colors = st.slider("选择颜色类别数量", min_value=2, max_value=10, value=3)
-    labels, clustered_img = color_clustering(img_cv, n_colors=n_colors)
 
+    labels, clustered_img = color_clustering(img_np, n_colors=n_colors)
     st.image(clustered_img, caption='颜色聚类结果', use_column_width=True)
 
     layer_edges = extract_layer_edges(labels)
     st.image(layer_edges, caption='层界面边缘', use_column_width=True)
 
-    impurity_contours = extract_impurity_contours(labels, img_cv)
+    impurity_contours = extract_impurity_contours(labels, clustered_img)
     st.image(impurity_contours, caption='杂质轮廓', use_column_width=True)
 
     st.write("每个颜色类别独立展示")
