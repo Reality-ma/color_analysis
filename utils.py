@@ -38,3 +38,4 @@ def extract_impurity_contours(label_img, original_img):
             coords[:,1] = np.clip(coords[:,1], 0, contours_img.shape[1]-1)
             contours_img[coords[:,0], coords[:,1]] = [0,255,0]
     return contours_img
+
